@@ -3,63 +3,24 @@
 <head>
   <meta charset="utf-8" />
   <title>D3 Loan Map -- Jordan Poles</title>
-  <link type="text/css" rel="stylesheet" href="jquery.qtip.min.css" />
+  <!--<link type="text/css" rel="stylesheet" href="jquery.qtip.min.css" />-->
   <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-  <script src="colorbrewer.js"></script>
   <script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
-  <script src="jquery.qtip.min.js"></script>
+  <!--<script src="colorbrewer.js"></script>
+  <script src="jquery.qtip.min.js"></script>-->
   <style>
-  body { margin:0; padding:20px; }
+  body {
+    margin:0;
+    padding:20px;
+    width: 1200px;
+  }
   #map {
     display:block;
-    width:900px;
+    width:840px;
     height:600px;
   }
-  .county {
-    fill:#c0c0c0;
-    stroke:white;
-    stroke-width:1px;
-  }
-  #legend {
-    position: absolute;
-    width: 200px;
-    text-align: center;
-    top: 120px;
-    padding-right: 50px;
-  }
-  .legendbox{
-    margin-top: 15px;
-  }
-  #legend ul{
-    list-style: none;
-    display: inline;
-    margin-top: 0px;
-  }
-  li.key {
-    border-top-width: 15px;
-    border-top-style: solid;
-    font-size: .75em;
-    width: 100%;
-    padding-left: 0;
-    padding-right: 0;
-    margin-bottom: 5px;
-    font-weight: bold;
-    font-size: 11pt;
-  }
-  .my-tooltip{
-    font-weight: bold;
-    font-size: 12pt;
-    cursor: crosshair;
-  }
-  #legtitle{
-    font-size: 16pt;
-    margin-bottom: -10px;
-    font-weight: bold;
-  }
-  #legend select{
-    font-size: 12pt;
-    margin: auto;
-    margin-left: 30px;
+  #map .active {
+    fill: orange;
   }
   svg{
     cursor: crosshair;
@@ -68,71 +29,102 @@
 </head>
 
 <body>
-  <h1>Map of Direct US Federal Unsubsidized Student Loans to Undergraduates By School</h1>
-  <div id="left-pane" style="width: 70%; float: left; display: inline;">
+  <div id="left-pane" style="width: 840px; float: left; display: inline;">
+    <h1>Global Pesticide Use</h1>
     <div id="map"></div>
   </div>
   <div id="right-pane" style="width: 30%; float: left; display: inline;">
-    SELECTY
+    <h1>Pesticide Use over Time</h1>
   </div>
 </body>
 <script>
   //Setup Map Space
-  var width = 900,
-    height = 600;
-  projection = d3.geo.albersUsa()
-    .scale(1000)
-    .translate([width / 2, height / 2])
+  var width = 800,
+    height = 500,
+    centered;
+  projection = d3.geo.mercator()
+    .scale((width) / 2.1 / Math.PI)
+    .translate([width / 2, height / 1.5])
     .precision(.1);
-  path = d3.geo.path()
-  svg = d3.select("#map").append("svg")
+  path = d3.geo.path().projection(projection);
+  mapsvg = d3.select("#map").append("svg")
     .attr("width", width)
-    .attr("height", height);
+    .attr("height", height)
+  mapsvg.append("rect")
+      .attr("class", "svgbg")
+      .attr("width", width)
+      .attr("height", height)
+      .on("click", clicked)
+      .attr("fill", "#333")
+  mapsvg = mapsvg.append("g")
+
   //Setup Legend
-  var legend = d3.select('#legend').attr("style", "left:"+(width+100)+"px").append('ul').append("div").attr('class', 'list-inline')
+  /*var legend = d3.select('#legend').attr("style", "left:"+(width+100)+"px").append('ul').append("div").attr('class', 'list-inline')
   var datavars = ["Recipients", "amt disbursed", "Population"]
   var prettynames = ["# of Loans", "$ Disbursed", "State Pop."]
   var varselect = d3.select("#legend select")
   for(i in datavars){
     varselect.append("option").attr("value", datavars[i]).text(prettynames[i])
-  }
+  }*/
   //Drawing function
-  function drawMap(state, data, datavar){
-    //Create color scale
-    var colors = d3.scale.quantize().domain([data["mins"][datavar], data["maxes"][datavar]])
-      .range(colorbrewer.YlGn[7]);
-    legend.html("")
-    var keys = legend.selectAll('li.key')
-        .data(colors.range());
-    keys.enter().append("div").attr("class", "legendbox").attr("style", "border: 1px solid black").append('li')
-      .attr('class', 'key')
-      .style('border-top-color', String)
-      .html(function(d) {
-          var r = colors.invertExtent(d);
-          return Math.floor(r[0]).toLocaleString()+" to "+Math.floor(r[1]).toLocaleString();
-      });
+  function pathAnimate(selector) {
+    $(selector).each(function(){
+      var speed = 2.5; // seconds
+      var path = $(this).get(0);
+      var length = path.getTotalLength();
+
+      path.style.strokeDasharray = length + ' ' + length;
+      path.style.strokeDashoffset = length;
+      path.style.transition = path.style.WebkitTransition = 'none';
+
+      path.getBoundingClientRect();
+      path.style.transition = path.style.WebkitTransition = 'stroke-dashoffset ' + speed + 's ease';
+      path.style.strokeDashoffset = '0';
+    });
+  };
+  function clicked(d) {
+
+    //Zooming logic
+    var x, y, k;
+    if (d && centered !== d) {
+      var centroid = path.centroid(d);
+      x = centroid[0];
+      y = centroid[1];
+      k = 4;
+      centered = d;
+    } else {
+      x = width / 2;
+      y = height / 2;
+      k = 1;
+      centered = null;
+    }
+    mapsvg.selectAll("path")
+        .classed("active", centered && function(d) { return d === centered; });
+    mapsvg.transition()
+        .duration(750)
+        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")")
+        .style("stroke-width", 1.5 / k + "px");
+  }
+  function drawMap(countrydata, pesticidedata){
     //Add Map Paths & Fill
-    svg.html("").selectAll("path").data(state.features).enter()
-       .append("path").attr("d", path).attr("state", function(d){return d.properties.NAME})
-       .attr("stroke", "black")
-       .attr("fill", function(d){return colors(data["vals"][datavar][d.properties.NAME])})
-       .attr("title", function(d){return d.properties.NAME+": "+parseInt(data["vals"][datavar][d.properties.NAME]).toLocaleString()})
-    $("path[title]").qtip({
-      style: {classes: 'my-tooltip'},
-      position: {target: 'mouse'}
-    })
+    console.log(countrydata)
+    mapsvg.html("").selectAll("path").data(countrydata.features).enter()
+       .append("path").attr("class", "countrypath").attr("d", path)
+       .attr("name", function(d){return d.properties.name_long})
+       .attr("stroke", "black").attr("fill", "white")
+       .attr("id", function(d){return d.properties.name_long.replace(/\s/g, "")})
+       .on("click", clicked);
   }
   //Load Geodata
-  d3.json("countries.geojson", function(error,state) {
+  d3.json("countries.geojson", function(error,countrydata) {
     if(error) alert(error)
     //Load dataset
-    d3.json("pesticide.json", function(error, data){
+    d3.json("pesticide.json", function(error, pesticidedata){
       if(error) alert(error)
       //Run
-      /*drawMap(state, data, datavars[0])
-      varselect.on("input", function() {
-        drawMap(state, data, this.value)
-      });*/
+      drawMap(countrydata, pesticidedata)
+      pathAnimate(".countrypath")
+      drawMore()
     });
   });
 </script>
