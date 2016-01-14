@@ -3,17 +3,17 @@
 <head>
   <meta charset="utf-8" />
   <title>D3 Loan Map -- Jordan Poles</title>
-  <!--<link type="text/css" rel="stylesheet" href="jquery.qtip.min.css" />-->
+  <link type="text/css" rel="stylesheet" href="jquery.qtip.min.css" />
   <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
   <script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+  <script src="colorbrewer.js"></script>
+  <script src="jquery.qtip.min.js"></script>
   <script src="map.js"></script>
-  <!--<script src="colorbrewer.js"></script>
-  <script src="jquery.qtip.min.js"></script>-->
   <style>
   body {
     margin:0;
     padding:20px;
-    width: 1200px;
+    width: 1300px;
   }
   #map {
     display:block;
@@ -26,49 +26,25 @@
   svg{
     cursor: crosshair;
   }
+  .my-tooltip{
+    font-weight: bold;
+    font-size: 12pt;
+    cursor: crosshair;
+  }
   </style>
 </head>
 
 <body>
-  <div id="left-pane" style="width: 840px; float: left; display: inline;">
+  <div id="left-pane" style="width: 800px; float: left; display: inline;">
     <h1>Global Pesticide Use</h1>
     <div id="map"></div>
   </div>
-  <div id="right-pane" style="width: 360px; float: left; display: inline;">
+  <div id="right-pane" style="width: 400px; float: left; display: inline; margin-left: 20px;">
     <h1>Pesticide Use over Time</h1>
     <div id="timeplot"></div>
   </div>
 </body>
 <script>
-  function timeplot(selector, timedata, chem){
-    plt = this
-    var width = 360,
-      height = 500
-    var plotdata = [];
-    var maxval = 0;
-    for(key in timedata[chem]){
-      if(maxval==0){firstyear = key}
-      val = timedata[chem][key]
-      plotdata.push({"year": parseInt(key), "value": val})
-    }
-    var xScale = d3.scale.linear()
-      .domain([d3.min(plotdata, function(d) {return d.year}), d3.max(plotdata, function(d) {return d.year})])
-      .range([0, width])
-    var yScale = d3.scale.linear()
-      .domain([0, d3.max(plotdata, function(d) {return d.value})])
-      .range([height,0])
-    var plotline = d3.svg.line()
-      .x(function(d){return(xScale(d.year))}).y(function(d){return(yScale(d.value))})
-      .interpolate("linear");
-    svg = d3.select(selector).append("svg")
-      .attr("width", width)
-      .attr("height", height)
-    svg.append("rect").attr("class", "plotbg")
-      .attr("width", width)
-      .attr("height", height)
-      .attr("fill", "#333")
-    svg.append("path").attr("d", plotline(plotdata)).attr("stroke", "white").attr("fill", "none")
-  }
   //Load Geodata
   d3.json("countries.geojson", function(error,countrydata) {
     if(error) alert(error)
@@ -76,10 +52,9 @@
     d3.json("pesticide.json", function(error, pesticidedata){
       if(error) alert(error)
       //Run
-      worldmap = new map("#map", countrydata, pesticidedata)
       d3.json("chemsperyear.json", function(error, chemdata){
         if(error) alert(error)
-        timeplot = new timeplot("#timeplot", chemdata, "Chlorinated Hydrocarbons")
+        worldmap = new map("#map", countrydata, pesticidedata, chemdata)
       });
     });
   });
