@@ -37,7 +37,6 @@ function map(selector, countrydata, pesticidedata, chemdata){
       .attr("transform", "translate("+leftmargin+", "+(25-botmargin)+")")
       .append("path").attr("d", plotline(plotdata))
       .attr("stroke", "white").attr("fill", "none")
-    console.log(plotdata)
     svg.append("g").attr("id", "dotplot")
       .attr("transform", "translate("+leftmargin+", "+(25-botmargin)+")")
       .selectAll("circle").data(plotdata).enter().append("circle")
@@ -45,7 +44,7 @@ function map(selector, countrydata, pesticidedata, chemdata){
       .attr("r", 5)
       .attr("stroke", "white").attr("fill", "white")
       .attr("class", "dot")
-      .attr("title", function(d){console.log(d);return(d.year+": "+Math.round(d.value))})
+      .attr("title", function(d){return(d.year+": "+Math.round(d.value))})
     $(".dot").qtip({
       style: {classes: 'my-tooltip'},
       position: {my: "bottom left", at: "top left"}
@@ -87,23 +86,38 @@ function map(selector, countrydata, pesticidedata, chemdata){
   };
   function clicked(d) {
     chem = "Chlorinated Hydrocarbons"
-    chemdata = pesticidedata[d.properties.name_long][chem]
-    console.log(Object.keys(chemdata).length, chemdata)
+    /*try{
+      chemdata = pesticidedata[d.properties.name_long][chem]
+      new timeplot("#timeplot", pesticidedata[d.properties.name_long], chem)
+    }
+    catch(e){
+      console.log("TEST")
+      new timeplot("#timeplot", chemdata, chem)
+    }*/
     //Zooming logic
     var x, y, k;
-    if (d && centered !== d &&  chemdata != undefined) {
-      new timeplot("#timeplot", pesticidedata[d.properties.name_long], chem)
+    if (d && centered !== d && pesticidedata[d.properties.name_long]) {
       var centroid = path.centroid(d);
       x = centroid[0];
       y = centroid[1];
       k = 4;
       centered = d;
-    } else {
-      new timeplot("#timeplot", chemdata, chem)
+      console.log(pesticidedata[d.properties.name_long])
+      new timeplot("#timeplot", pesticidedata[d.properties.name_long], chem)
+    }
+    else if(centered == d) {
       x = width / 2;
       y = height / 2;
       k = 1;
       centered = null;
+      new timeplot("#timeplot", chemdata, chem)
+    }
+    else {
+      x = width / 2;
+      y = height / 2;
+      k = 1;
+      centered = null;
+      new timeplot("#timeplot", chemdata, chem)
     }
     mapsvg.selectAll("path")
         .classed("active", centered && function(d) { return d === centered; });
