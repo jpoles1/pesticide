@@ -12,15 +12,10 @@
   <script src="map.js"></script>
   <style>
   body {
-    margin:0;
+    margin: auto;
     padding:20px;
     width: 1400px;
     background-color: #2d2d2d;
-  }
-  #map {
-    display:block;
-    width:840px;
-    height:600px;
   }
   #map .active {
     fill: orange;
@@ -41,7 +36,7 @@
     margin: 21px 0 21px 0;
   }
   #maptitle{
-    width: 760px;
+    width: 840px;
     text-align: center;
     color: #eee;
     background-color: #333;
@@ -56,23 +51,47 @@
     display: inline;
     text-align: center;
     margin-left: 10px;
-    width: 400px;
+    width: 500px;
     font-size: 32px;
+  }
+  #wiki{
+    margin-top: 80px;
+    width: 1000px;
+    margin: auto;
+  }
+  #plotpanel{
+    height: 760px;
+  }
+  #header{
+    text-align: center;
+    color: #eee;
+    background-color: #333;
+    padding: 20px;
+    font-size: 32px;
+    font-weight: bold;
   }
   </style>
 </head>
 
 <body>
-  <div id="left-pane" style="width: 800px; float: left; display: inline;">
-    <div id="maptitle">
-      Global Usage of <select></select>
+  <div id="header">
+    Global Pesticide Usage from 1990 to 2011 as Reported to the UN FAO
+    <br>
+    <span style="font-size: 24px">Data Sourced from the <a href="http://faostat3.fao.org/home/E" target="_blank" style="color: #ddd">FAOSTAT</a> Bulk Data Download (Resources - Pesticides Use)</span>
+  </div>
+  <div  id="plotpanel">
+    <div id="left-pane" style="width: 880px; float: left; display: inline;">
+      <div id="maptitle">
+        Global Usage of <select></select>
+      </div>
+      <div id="map"></div>
     </div>
-    <div id="map"></div>
+    <div id="right-pane" style="width: 500px; float: left; display: inline; margin-left: 20px;">
+      <h1 id="plottitle">Global Use (Tonnes/Year)</h1>
+      <div id="timeplot"></div>
+    </div>
   </div>
-  <div id="right-pane" style="width: 500px; float: left; display: inline; margin-left: 20px;">
-    <h1 id="plottitle">Global Use (Tonnes/Year)</h1>
-    <div id="timeplot"></div>
-  </div>
+  <div id="wiki"></div>
 </body>
 <script>
   //Load Geodata
@@ -88,15 +107,15 @@
           if(error) alert(error)
           chemlist = Object.keys(chemdata)
           for(i in chemdata){
-            $("#maptitle select").append("<option value=\""+i+"\">"+i+" ("+Math.round(sumDict(chemdata[i]))+")</option>")
+            $("#maptitle select").append("<option value=\""+i+"\">"+i+" ("+Math.round(sumDict(chemdata[i])).toLocaleString()+" Tonnes)</option>")
           }
           chem = "Chlorinated Hydrocarbons"
-          $("#maptitle select option").each(function() { this.selected = (this.text == chem); });
-          worldmap = new map("#map", geodata, pesticidedata, chemdata, countrydata, chem)
+          $("#maptitle select option[value='"+chem+"']").attr('selected','selected');
+          //$("#maptitle select option").each(function() { this.selected = (this.text == chem); });
+          updateMap(geodata, pesticidedata, chemdata, countrydata, chem)
           $("#maptitle select").change(function(){
             chem = $(this).val()
-            console.log(chem)
-            worldmap = new map("#map", geodata, pesticidedata, chemdata, countrydata, chem)
+            updateMap(geodata, pesticidedata, chemdata, countrydata, chem)
           });
         });
       });

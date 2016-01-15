@@ -4,7 +4,12 @@ function sumDict( obj ) {
      return sum + parseFloat( obj[key] );
    }, 0 );
 }
-
+function updateMap(geodata, pesticidedata, chemdata, countrydata, chem){
+  console.log(chem)
+  worldmap = new map("#map", geodata, pesticidedata, chemdata, countrydata, chem)
+  wikiurl = "http://en.wikipedia.org/wiki/Special:Search/"+encodeURIComponent(chem)
+  $("#wiki").html("<a href="+wikiurl+" target='_blank'><h1>Wikipedia Page</h1></a><iframe src="+wikiurl+" width='1000' height='600'></iframe>")
+}
 function map(selector, geodata, pesticidedata, chemdata, countrydata, chem){
   function timeplot(selector, timedata, chem){
     plt = this
@@ -119,7 +124,7 @@ function map(selector, geodata, pesticidedata, chemdata, countrydata, chem){
         .style("stroke-width", 1.5 / k + "px");
   }
   worldmap = this;
-  var width = 800,
+  var width = 880,
     height = 600,
     centered;
   projection = d3.geo.mercator()
@@ -134,6 +139,9 @@ function map(selector, geodata, pesticidedata, chemdata, countrydata, chem){
     var val = chembycountry[country];
     if(val>maxval) maxval =val
     if(val<minval) minval =val
+  }
+  if(maxval==0){
+    console.log(chembycountry)
   }
   console.log(minval, maxval)
   var mapcolors = d3.scale.quantize()
