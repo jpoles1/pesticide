@@ -5,6 +5,7 @@
   <title>D3 Loan Map -- Jordan Poles</title>
   <link type="text/css" rel="stylesheet" href="jquery.qtip.min.css" />
   <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/1.7.0/d3-legend.min.js"></script>
   <script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
   <script src="colorbrewer.js"></script>
   <script src="jquery.qtip.min.js"></script>
@@ -13,7 +14,8 @@
   body {
     margin:0;
     padding:20px;
-    width: 1300px;
+    width: 1400px;
+    background-color: #222;
   }
   #map {
     display:block;
@@ -31,22 +33,26 @@
     font-size: 12pt;
     cursor: crosshair;
   }
+  h1{
+    text-align: center;
+    color: #eee;
+  }
   </style>
 </head>
 
 <body>
   <div id="left-pane" style="width: 800px; float: left; display: inline;">
-    <h1>Global Pesticide Use</h1>
+    <h1 id="maptitle">Global Pesticide Use</h1>
     <div id="map"></div>
   </div>
-  <div id="right-pane" style="width: 400px; float: left; display: inline; margin-left: 20px;">
-    <h1>Pesticide Use over Time</h1>
+  <div id="right-pane" style="width: 500px; float: left; display: inline; margin-left: 20px;">
+    <h1 id="plottitle">Pesticide Usage over Time</h1>
     <div id="timeplot"></div>
   </div>
 </body>
 <script>
   //Load Geodata
-  d3.json("countries.geojson", function(error,countrydata) {
+  d3.json("countries.geojson", function(error,geodata) {
     if(error) alert(error)
     //Load dataset
     d3.json("pesticide.json", function(error, pesticidedata){
@@ -54,7 +60,11 @@
       //Run
       d3.json("chemsperyear.json", function(error, chemdata){
         if(error) alert(error)
-        worldmap = new map("#map", countrydata, pesticidedata, chemdata)
+        d3.json("chemspercountry.json", function(error, countrydata){
+          if(error) alert(error)
+          chem = "Chlorinated Hydrocarbons"
+          worldmap = new map("#map", geodata, pesticidedata, chemdata, countrydata, chem)
+        });
       });
     });
   });
