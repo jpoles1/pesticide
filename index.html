@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>D3 Loan Map -- Jordan Poles</title>
+  <title>D3 Pesticide Map -- Jordan Poles</title>
   <link type="text/css" rel="stylesheet" href="jquery.qtip.min.css" />
   <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/1.7.0/d3-legend.min.js"></script>
@@ -15,7 +15,7 @@
     margin:0;
     padding:20px;
     width: 1400px;
-    background-color: #222;
+    background-color: #2d2d2d;
   }
   #map {
     display:block;
@@ -36,17 +36,41 @@
   h1{
     text-align: center;
     color: #eee;
+    background-color: #333;
+    padding: 20px;
+    margin: 21px 0 21px 0;
+  }
+  #maptitle{
+    width: 760px;
+    text-align: center;
+    color: #eee;
+    background-color: #333;
+    display: inline;
+    float: left;
+    font-size: 32px;
+    font-weight: bold;
+    margin: 21px 0 21px 0;
+    padding: 20px;
+  }
+  #maptitle select{
+    display: inline;
+    text-align: center;
+    margin-left: 10px;
+    width: 400px;
+    font-size: 32px;
   }
   </style>
 </head>
 
 <body>
   <div id="left-pane" style="width: 800px; float: left; display: inline;">
-    <h1 id="maptitle">Global Pesticide Use</h1>
+    <div id="maptitle">
+      Global Usage of <select></select>
+    </div>
     <div id="map"></div>
   </div>
   <div id="right-pane" style="width: 500px; float: left; display: inline; margin-left: 20px;">
-    <h1 id="plottitle">Pesticide Usage over Time</h1>
+    <h1 id="plottitle">Global Use (Tonnes/Year)</h1>
     <div id="timeplot"></div>
   </div>
 </body>
@@ -62,8 +86,18 @@
         if(error) alert(error)
         d3.json("chemspercountry.json", function(error, countrydata){
           if(error) alert(error)
+          chemlist = Object.keys(chemdata)
+          for(i in chemdata){
+            $("#maptitle select").append("<option value=\""+i+"\">"+i+" ("+Math.round(sumDict(chemdata[i]))+")</option>")
+          }
           chem = "Chlorinated Hydrocarbons"
+          $("#maptitle select option").each(function() { this.selected = (this.text == chem); });
           worldmap = new map("#map", geodata, pesticidedata, chemdata, countrydata, chem)
+          $("#maptitle select").change(function(){
+            chem = $(this).val()
+            console.log(chem)
+            worldmap = new map("#map", geodata, pesticidedata, chemdata, countrydata, chem)
+          });
         });
       });
     });

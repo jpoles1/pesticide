@@ -1,3 +1,10 @@
+function sumDict( obj ) {
+  return Object.keys( obj )
+   .reduce( function( sum, key ){
+     return sum + parseFloat( obj[key] );
+   }, 0 );
+}
+
 function map(selector, geodata, pesticidedata, chemdata, countrydata, chem){
   function timeplot(selector, timedata, chem){
     plt = this
@@ -66,7 +73,6 @@ function map(selector, geodata, pesticidedata, chemdata, countrydata, chem){
     });
   };
   function clicked(d) {
-    chem = "Chlorinated Hydrocarbons"
     /*try{
       chemdata = pesticidedata[d.properties.name_long][chem]
       new timeplot("#timeplot", pesticidedata[d.properties.name_long], chem)
@@ -84,8 +90,7 @@ function map(selector, geodata, pesticidedata, chemdata, countrydata, chem){
       y = centroid[1];
       k = 4;
       centered = d;
-      console.log(pesticidedata[d.properties.name_long])
-      $("#plottitle").html("Usage in "+d.properties.name_long)
+      $("#plottitle").html("Use in "+d.properties.name_long+" (Tonnes)")
       new timeplot("#timeplot", pesticidedata[d.properties.name_long], chem)
     }
     else if(centered == d) {
@@ -95,7 +100,7 @@ function map(selector, geodata, pesticidedata, chemdata, countrydata, chem){
       centered = null;
       new timeplot("#timeplot", chemdata, chem)
       $("#legend").show()
-      $("#plottitle").html("Pesticide Usage over Time")
+      $("#plottitle").html("Global Use (Tonnes/Year)")
     }
     else {
       x = width / 2;
@@ -104,7 +109,7 @@ function map(selector, geodata, pesticidedata, chemdata, countrydata, chem){
       centered = null;
       new timeplot("#timeplot", chemdata, chem)
       $("#legend").show()
-      $("#plottitle").html("Pesticide Usage over Time")
+      $("#plottitle").html("Global Use (Tonnes/Year)")
     }
     mapsvg.selectAll("path")
         .classed("active", centered && function(d) { return d === centered; });
@@ -130,6 +135,7 @@ function map(selector, geodata, pesticidedata, chemdata, countrydata, chem){
     if(val>maxval) maxval =val
     if(val<minval) minval =val
   }
+  console.log(minval, maxval)
   var mapcolors = d3.scale.quantize()
     .domain([minval, maxval])
     .range(colorbrewer.YlGn[7]);
@@ -137,7 +143,7 @@ function map(selector, geodata, pesticidedata, chemdata, countrydata, chem){
     .labelFormat(d3.round)
     .shapeWidth(30)
     .scale(mapcolors);
-  mapsvg = d3.select(selector).append("svg")
+  mapsvg = d3.select(selector).html("").append("svg")
     .attr("width", width)
     .attr("height", height)
   mapsvg.append("rect")
@@ -155,17 +161,22 @@ function map(selector, geodata, pesticidedata, chemdata, countrydata, chem){
     .attr("id", function(d){return d.properties.name_long.replace(/\s/g, "")})
     .on("click", clicked)
     .attr("fill", function(d){
-     val = chembycountry[d.properties.name_long];
-      if(val){
-       return(mapcolors(val))
+      try{
+       val = chembycountry[d.properties.name_long];
+        if(val){
+         return(mapcolors(val))
+        }
+        else{
+         return("white")
+        }
       }
-      else{
-       return("white")
+      catch(e){
+        return("white")
       }
     })
   legend.call(legendGen)
   legend.selectAll("text").attr("transform", "translate(43, 13)").attr("fill", "white")
   pathAnimate(".countrypath")
-  $("#maptitle").html("Global Usage of "+chem)
-  new timeplot("#timeplot", chemdata, "Chlorinated Hydrocarbons")
+  $("#plottitle").html("Global Use (Tonnes/Year)")
+  new timeplot("#timeplot", chemdata, chem)
 }
