@@ -8,7 +8,7 @@ function updateMap(geodata, pesticidedata, chemdata, countrydata, chem){
   console.log(chem)
   worldmap = new map("#map", geodata, pesticidedata, chemdata, countrydata, chem)
   wikiurl = "http://en.wikipedia.org/wiki/Special:Search/"+encodeURIComponent(chem)
-  $("#wiki").html("<a href="+wikiurl+" target='_blank'><h1>Wikipedia Page</h1></a><iframe src="+wikiurl+" width='1000' height='600'></iframe>")
+  $("#wiki").html("<a href="+wikiurl+" target='_blank' style='color: white;'><h1>Wikipedia Page</h1></a><iframe src="+wikiurl+" width='1000' height='600'></iframe>")
 }
 function map(selector, geodata, pesticidedata, chemdata, countrydata, chem){
   function timeplot(selector, timedata, chem){
